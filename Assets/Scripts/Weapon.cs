@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class Weapon : MonoBehaviour
@@ -7,19 +8,35 @@ public class Weapon : MonoBehaviour
     [SerializeField] float damage = 30f;
     [SerializeField] ParticleSystem muzzleFlash;
     [SerializeField] GameObject hitEffect;
+    [SerializeField] Ammo ammoSlot;
+    [SerializeField] AmmoType ammoType;
+    [SerializeField] float timeBetweenSeconds = .5f;
 
+    bool canShoot = true;
+
+    private void OnEnable()
+    {
+        canShoot = true;
+    }
     void Update()
     {
-        if (Input.GetButtonDown("Fire1"))
+        if (Input.GetMouseButtonDown(0) && canShoot)
         {
-            Shoot();
+            StartCoroutine(Shoot());
         }
     }
 
-    private void Shoot()
+    IEnumerator Shoot()
     {
-        ProcessRaycast();
-        PlayMuzzleFlash();
+        canShoot = false;
+        if (ammoSlot.GetCurrentAmmo(ammoType) > 0)
+        {
+            ProcessRaycast();
+            PlayMuzzleFlash();
+            ammoSlot.ReduceCurrentAmmo(ammoType);
+        }
+        yield return new WaitForSeconds(timeBetweenSeconds);
+        canShoot = true;
     }
 
     private void ProcessRaycast()
